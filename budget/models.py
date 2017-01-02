@@ -1,4 +1,5 @@
 from collections import defaultdict
+from decimal import Decimal
 
 from datetime import datetime
 from flask.ext.sqlalchemy import SQLAlchemy, BaseQuery
@@ -52,7 +53,7 @@ class Project(db.Model):
 
     @property
     def uses_weights(self):
-        return len([i for i in self.members if i.weight != 1]) > 0
+        return len([i for i in self.members if i.weight != Decimal(1)]) > 0
 
     def get_transactions_to_settle_bill(self):
         """Return a list of transactions that could be made to settle the bill"""
@@ -67,7 +68,7 @@ class Project(db.Model):
                 debts.append({"person": person, "balance": -balance[person.id]})
         # Try and find exact matches
         for credit in credits:
-            match = self.exactmatch(round(credit["balance"], 2), debts)
+            match = self.exactmatch(credit["balance"], debts)
             if match:
                 for m in match:
                     transactions.append({"ower": m["person"], "receiver": credit["person"], "amount": m["balance"]})
@@ -164,7 +165,7 @@ class Person(db.Model):
     bills = db.relationship("Bill", backref="payer")
 
     name = db.Column(db.UnicodeText)
-    weight = db.Column(db.Float, default=1)
+    weight = db.Column(db.Numeric(scale=2), default=Decimal(1))
     activated = db.Column(db.Boolean, default=True)
 
     def has_bills(self):
@@ -216,7 +217,7 @@ class Bill(db.Model):
     payer_id = db.Column(db.Integer, db.ForeignKey("person.id"))
     owers = db.relationship(Person, secondary=billowers)
 
-    amount = db.Column(db.Float)
+    amount = db.Column(db.Numeric(scale=2))
     date = db.Column(db.Date, default=datetime.now)
     what = db.Column(db.UnicodeText)
 

@@ -8,6 +8,7 @@ import base64
 import os
 import json
 from collections import defaultdict
+from decimal import Decimal
 
 os.environ['FLASK_SETTINGS_MODULE'] = 'default_settings'
 
@@ -346,7 +347,7 @@ class BudgetTestCase(TestCase):
         })
         models.Project.query.get("raclette")
         bill = models.Bill.query.one()
-        self.assertEqual(bill.amount, 25)
+        self.assertEqual(bill.amount, Decimal('25'))
 
         # edit the bill
         self.app.post("/raclette/edit/%s" % bill.id, data={
@@ -358,7 +359,7 @@ class BudgetTestCase(TestCase):
         })
 
         bill = models.Bill.query.one()
-        self.assertEqual(bill.amount, 10, "bill edition")
+        self.assertEqual(bill.amount, Decimal('10'), "bill edition")
 
         # delete the bill
         self.app.get("/raclette/delete/%s" % bill.id)
@@ -390,7 +391,7 @@ class BudgetTestCase(TestCase):
         })
 
         balance = models.Project.query.get("raclette").balance
-        self.assertEqual(set(balance.values()), set([19.0, -19.0]))
+        self.assertEqual(set(balance.values()), set([Decimal('19.0'), Decimal('-19.0')]))
 
         #Bill with negative amount
         self.app.post("/raclette/add", data={
@@ -401,7 +402,7 @@ class BudgetTestCase(TestCase):
             'amount': '-25'
         })
         bill = models.Bill.query.filter(models.Bill.date == '2011-08-12')[0]
-        self.assertEqual(bill.amount, -25)
+        self.assertEqual(bill.amount, Decimal('-25'))
 
         #add a bill with a comma
         self.app.post("/raclette/add", data={
@@ -412,7 +413,7 @@ class BudgetTestCase(TestCase):
             'amount': '25,02',
         })
         bill = models.Bill.query.filter(models.Bill.date == '2011-08-01')[0]
-        self.assertEqual(bill.amount, 25.02)
+        self.assertEqual(bill.amount, Decimal('25.02'))
 
     def test_weighted_balance(self):
         self.post_project("raclette")
@@ -442,7 +443,7 @@ class BudgetTestCase(TestCase):
         })
 
         balance = models.Project.query.get("raclette").balance
-        self.assertEqual(set(balance.values()), set([6, -6]))
+        self.assertEqual(set(balance.values()), set([Decimal('6'), Decimal('-6')]))
 
     def test_weighted_members_list(self):
         self.post_project("raclette")
@@ -495,9 +496,9 @@ class BudgetTestCase(TestCase):
 
         balance = models.Project.query.get("raclette").balance
         result = {}
-        result[models.Project.query.get("raclette").members[0].id] = 8.12
-        result[models.Project.query.get("raclette").members[1].id] = 0.0
-        result[models.Project.query.get("raclette").members[2].id] = -8.12
+        result[models.Project.query.get("raclette").members[0].id] = Decimal('8.12')
+        result[models.Project.query.get("raclette").members[1].id] = Decimal('0.0')
+        result[models.Project.query.get("raclette").members[2].id] = Decimal('-8.12')
         self.assertDictEqual(balance, result)
 
     def test_edit_project(self):
