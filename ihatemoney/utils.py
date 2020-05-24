@@ -301,7 +301,7 @@ class FormEnum(Enum):
 
 
 def render_localized_currency(code, detailed=True):
-    if code == "XXXXX":
+    if code == "XXX":
         return _("No Currency")
     locale = get_locale() or "en_US"
     symbol = get_currency_symbol(code, locale=locale)
