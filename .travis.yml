@@ -15,4 +15,5 @@ script: tox
 install:
   - pip install tox-travis
 services:
+  - mysql
   - postgresql
