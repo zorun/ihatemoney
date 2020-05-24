@@ -11,6 +11,6 @@ before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
 script: tox
 install:
-  - pip install tox-travis psycopg2-binary
+  - pip install tox-travis
 services:
   - postgresql
