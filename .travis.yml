@@ -6,7 +6,7 @@ python:
   - "3.8"
 env:
   - TESTING_SQLALCHEMY_DATABASE_URI='sqlite:///budget.db'
-  - TESTING_SQLALCHEMY_DATABASE_URI='postgresql+psycopg2://budget:@localhost/travis_ci_test'
+  - TESTING_SQLALCHEMY_DATABASE_URI='postgresql+psycopg2://postgres:@localhost/travis_ci_test'
 before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
 script: tox
