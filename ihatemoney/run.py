@@ -8,6 +8,7 @@ from flask_babel import Babel, format_currency
 from flask_mail import Mail
 from flask_migrate import Migrate, stamp, upgrade
 from flask_talisman import Talisman
+from flask_debugtoolbar import DebugToolbarExtension
 from jinja2 import pass_context
 from markupsafe import Markup
 import pytz
@@ -127,24 +128,6 @@ def create_app(
         instance_relative_config=instance_relative_config,
     )
 
-    # If we need to load external JS/CSS/image resources, it needs to be added here, see
-    # https://github.com/wntrblm/flask-talisman#content-security-policy
-    csp = {
-        "default-src": ["'self'"],
-        # We have several inline javascript scripts :(
-        "script-src": ["'self'", "'unsafe-inline'"],
-        "object-src": "'none'",
-    }
-
-    Talisman(
-        app,
-        # Forcing HTTPS is the job of a reverse proxy
-        force_https=False,
-        # This is handled separately through the SESSION_COOKIE_SECURE Flask setting
-        session_cookie_secure=False,
-        content_security_policy=csp,
-    )
-
     # If a configuration object is passed, use it. Otherwise try to find one.
     load_configuration(app, configuration)
     app.wsgi_app = PrefixedWSGI(app)
@@ -159,6 +142,25 @@ def create_app(
     app.register_blueprint(apiv1)
     app.register_error_handler(404, page_not_found)
 
+    # If we need to load external JS/CSS/image resources, it needs to be added here, see
+    # https://github.com/wntrblm/flask-talisman#content-security-policy
+    csp = {
+        "default-src": ["'self'"],
+        # We have several inline javascript scripts :(
+        "script-src": ["'self'", "'unsafe-inline'"],
+        "object-src": "'none'",
+    }
+
+    if not app.config["DEBUG"]:
+        Talisman(
+            app,
+            # Forcing HTTPS is the job of a reverse proxy
+            force_https=False,
+            # This is handled separately through the SESSION_COOKIE_SECURE Flask setting
+            session_cookie_secure=False,
+            content_security_policy=csp,
+        )
+
     # Configure the a, root="main"pplication
     setup_database(app)
 
@@ -168,6 +170,8 @@ def create_app(
     mail = Mail()
     mail.init_app(app)
     app.mail = mail
+
+    toolbar = DebugToolbarExtension(app)
 
     # Jinja filters
     app.jinja_env.globals["static_include"] = static_include
